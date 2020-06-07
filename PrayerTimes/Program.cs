@@ -16,6 +16,7 @@ namespace PrayerTimes.BackgroundWorker
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.AddSingleton<ITaskScheduler, TaskScheduler>();
+                    services.AddSingleton<IPrayerTimesClient, PrayerTimesHTTPClient>();
                     services.AddHostedService<Worker>();
                 });
     }

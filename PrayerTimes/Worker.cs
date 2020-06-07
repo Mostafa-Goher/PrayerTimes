@@ -7,33 +7,56 @@ using System.Threading.Tasks;
 namespace PrayerTimes.BackgroundWorker
 {
     public class Worker : BackgroundService
-    {
+    {//http://praytimes.org/audio/adhan/Sunni/Abdul-Basit.mp3
         private readonly ILogger<Worker> _logger;
         private readonly ITaskScheduler taskScheduler;
+        private readonly IPrayerTimesClient prayerTimesClient;
 
-        public Worker(ILogger<Worker> logger, ITaskScheduler taskScheduler)
+        public Worker(ILogger<Worker> logger, ITaskScheduler taskScheduler, IPrayerTimesClient prayerTimesClient)
         {
             _logger = logger;
             this.taskScheduler = taskScheduler;
+            this.prayerTimesClient = prayerTimesClient;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Worker started at: {time}", DateTimeOffset.Now);
-            var soon = DateTime.Now.AddMinutes(1);
-            var soon2 = soon.AddMinutes(1);
+            InitForToday();
+        }
+        private void InitForToday()
+        {
+            _logger.LogInformation("Worker for today running at: {time}", DateTimeOffset.Now);
+            var timings = prayerTimesClient.GetTodayTimings().Result;
 
-            taskScheduler.ScheduleTask(soon.Hour, soon.Minute, 
+            SchedulePrayer(timings.Fajr, nameof(timings.Fajr));
+            SchedulePrayer(timings.Dhuhr, nameof(timings.Dhuhr));
+            SchedulePrayer(timings.Asr, nameof(timings.Asr));
+            SchedulePrayer(timings.Maghrib, nameof(timings.Maghrib));
+            SchedulePrayer(timings.Isha, nameof(timings.Isha));
+
+            var tomorrowsRun = TimeSpan.FromDays(1); // run tomorrow
+
+            taskScheduler.ScheduleTask(tomorrowsRun.Hours, tomorrowsRun.Minutes,
                 () =>
                 {
-                    _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+                    InitForToday();
                 });
+        }
 
-            taskScheduler.ScheduleTask(soon2.Hour, soon2.Minute,
-                () =>
-                {
-                    _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                });
+        private void SchedulePrayer(TimeSpan time, string prayerName)
+        {
+            DateTime now = DateTime.Now;
+
+            DateTime prayertime = new DateTime(now.Year, now.Month, now.Day, time.Hours, time.Minutes, 0, 0);
+            if (prayertime <= now)
+                return;
+
+            taskScheduler.ScheduleTask(time.Hours, time.Minutes,
+               () =>
+               {
+                   _logger.LogInformation("Worker for {prayer} running at: {time}", prayerName, DateTimeOffset.Now);
+               });
         }
     }
 }

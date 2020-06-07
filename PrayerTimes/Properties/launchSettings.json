@@ -1,0 +1,10 @@
+﻿{
+  "profiles": {
+    "PrayerTimes.BackgroundWorker": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

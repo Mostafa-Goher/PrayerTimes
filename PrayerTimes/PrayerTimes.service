@@ -1,0 +1,9 @@
+﻿[Unit]
+Description=Prayer Times BackgroundWorker
+
+[Service]
+Type=notify
+ExecStart=/usr/sbin/PrayerTimes.BackgroundWorker
+
+[Install]
+WantedBy=multi-user.target

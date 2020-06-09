@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using NetCoreAudio;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,16 +8,18 @@ using System.Threading.Tasks;
 namespace PrayerTimes.BackgroundWorker
 {
     public class Worker : BackgroundService
-    {//http://praytimes.org/audio/adhan/Sunni/Abdul-Basit.mp3
+    {
         private readonly ILogger<Worker> _logger;
         private readonly ITaskScheduler taskScheduler;
         private readonly IPrayerTimesClient prayerTimesClient;
-
+        Player player;
         public Worker(ILogger<Worker> logger, ITaskScheduler taskScheduler, IPrayerTimesClient prayerTimesClient)
         {
             _logger = logger;
             this.taskScheduler = taskScheduler;
             this.prayerTimesClient = prayerTimesClient;
+            player = new Player();
+
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -56,6 +59,7 @@ namespace PrayerTimes.BackgroundWorker
                () =>
                {
                    _logger.LogInformation("Worker for {prayer} running at: {time}", prayerName, DateTimeOffset.Now);
+                   player.Play(@"http://praytimes.org/audio/adhan/Sunni/Abdul-Basit.mp3").RunSynchronously();
                });
         }
     }

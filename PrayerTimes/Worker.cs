@@ -59,7 +59,7 @@ namespace PrayerTimes.BackgroundWorker
                () =>
                {
                    _logger.LogInformation("Worker for {prayer} running at: {time}", prayerName, DateTimeOffset.Now);
-                   player.Play(@"http://praytimes.org/audio/adhan/Sunni/Abdul-Basit.mp3").RunSynchronously();
+                   player.Play(@"http://praytimes.org/audio/adhan/Sunni/Abdul-Basit.mp3");
                });
         }
     }

@@ -45,6 +45,15 @@ namespace PrayerTimes.BackgroundWorker
                 {
                     InitForToday();
                 });
+
+            //for test
+            var testRun = DateTime.Now.AddMinutes(1);
+            taskScheduler.ScheduleTask(testRun.Hour, testRun.Minute,
+               () =>
+               {
+                   _logger.LogInformation("Worker for {prayer} running at: {time}", "test", DateTimeOffset.Now);
+                   player.Play(@"http://praytimes.org/audio/adhan/Sunni/Abdul-Basit.mp3");
+               });
         }
 
         private void SchedulePrayer(TimeSpan time, string prayerName)

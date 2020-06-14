@@ -16,4 +16,8 @@
     <PackageIconUrl>https://avatars3.githubusercontent.com/u/42421108?s=400&amp;u=d456e9d70c60cc963a855285290e7d8428e3a46c&amp;v=4</PackageIconUrl>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.5" />
+  </ItemGroup>
+
 </Project>

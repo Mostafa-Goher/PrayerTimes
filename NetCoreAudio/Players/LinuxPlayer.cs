@@ -8,7 +8,7 @@ namespace NetCoreAudio.Players
         {
             get
             {
-                return "mplayer";
+                return "cvlc";
             }
         }
     }

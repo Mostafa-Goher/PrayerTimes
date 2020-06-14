@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using NetCoreAudio;
+using NetCoreAudio.Interfaces;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,25 +12,26 @@ namespace PrayerTimes.BackgroundWorker
         private readonly ILogger<Worker> _logger;
         private readonly ITaskScheduler taskScheduler;
         private readonly IPrayerTimesClient prayerTimesClient;
-        Player player;
-        public Worker(ILogger<Worker> logger, ITaskScheduler taskScheduler, IPrayerTimesClient prayerTimesClient)
+        private readonly IPlayer player;
+
+        public Worker(ILogger<Worker> logger, ITaskScheduler taskScheduler, IPrayerTimesClient prayerTimesClient, IPlayer player)
         {
             _logger = logger;
             this.taskScheduler = taskScheduler;
             this.prayerTimesClient = prayerTimesClient;
-            player = new Player();
-
+            this.player = player;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Worker started at: {time}", DateTimeOffset.Now);
-            InitForToday();
+            await InitForToday();
         }
-        private void InitForToday()
+
+        private async Task InitForToday()
         {
             _logger.LogInformation("Worker for today running at: {time}", DateTimeOffset.Now);
-            var timings = prayerTimesClient.GetTodayTimings().Result;
+            var timings = await prayerTimesClient.GetTodayTimings();
 
             SchedulePrayer(timings.Fajr, nameof(timings.Fajr));
             SchedulePrayer(timings.Dhuhr, nameof(timings.Dhuhr));
@@ -41,19 +42,19 @@ namespace PrayerTimes.BackgroundWorker
             var tomorrowsRun = TimeSpan.FromDays(1); // run tomorrow
 
             taskScheduler.ScheduleTask(tomorrowsRun.Hours, tomorrowsRun.Minutes,
-                () =>
+                async () =>
                 {
-                    InitForToday();
+                    await InitForToday();
                 });
 
             //for test
-            var testRun = DateTime.Now.AddMinutes(1);
-            taskScheduler.ScheduleTask(testRun.Hour, testRun.Minute,
-               () =>
-               {
-                   _logger.LogInformation("Worker for {prayer} running at: {time}", "test", DateTimeOffset.Now);
-                   player.Play(@"http://praytimes.org/audio/adhan/Sunni/Abdul-Basit.mp3");
-               });
+            //var testRun = DateTime.Now.AddMinutes(1);
+            //taskScheduler.ScheduleTask(testRun.Hour, testRun.Minute,
+            //   async () =>
+            //   {
+            //       _logger.LogInformation("Worker for {prayer} running at: {time}", "test", DateTimeOffset.Now);
+            //       await player.Play(@"http://praytimes.org/audio/adhan/Sunni/Abdul-Basit.mp3");
+            //   });
         }
 
         private void SchedulePrayer(TimeSpan time, string prayerName)
@@ -65,10 +66,10 @@ namespace PrayerTimes.BackgroundWorker
                 return;
 
             taskScheduler.ScheduleTask(time.Hours, time.Minutes,
-               () =>
+               async () =>
                {
                    _logger.LogInformation("Worker for {prayer} running at: {time}", prayerName, DateTimeOffset.Now);
-                   player.Play(@"http://praytimes.org/audio/adhan/Sunni/Abdul-Basit.mp3");
+                   await player.Play(@"http://praytimes.org/audio/adhan/Sunni/Abdul-Basit.mp3");
                });
         }
     }

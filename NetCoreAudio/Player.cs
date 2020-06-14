@@ -1,4 +1,5 @@
-﻿using NetCoreAudio.Interfaces;
+﻿using Microsoft.Extensions.Logging;
+using NetCoreAudio.Interfaces;
 using NetCoreAudio.Players;
 using System;
 using System.Runtime.InteropServices;
@@ -9,6 +10,7 @@ namespace NetCoreAudio
     public class Player : IPlayer
     {
         private readonly IPlayer _internalPlayer;
+        private readonly ILogger<Player> logger;
 
         /// <summary>
         /// Internally, sets Playing flag to false. Additional handlers can be attached to it to handle any custom logic.
@@ -25,7 +27,7 @@ namespace NetCoreAudio
         /// </summary>
         public bool Paused => _internalPlayer.Paused;
 
-        public Player()
+        public Player(ILogger<Player> logger)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 _internalPlayer = new WindowsPlayer();
@@ -37,6 +39,7 @@ namespace NetCoreAudio
                 throw new Exception("No implementation exist for the current OS");
 
             _internalPlayer.PlaybackFinished += OnPlaybackFinished;
+            this.logger = logger;
         }
 
         /// <summary>
@@ -46,6 +49,7 @@ namespace NetCoreAudio
         /// <returns></returns>
         public async Task Play(string fileName)
         {
+            logger.LogInformation("Playing {fileName}", fileName);
             await _internalPlayer.Play(fileName);
         }
 

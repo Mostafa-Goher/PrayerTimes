@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace PrayerTimes.BackgroundWorker
 {
@@ -16,7 +17,7 @@ namespace PrayerTimes.BackgroundWorker
             this.logger = logger;
         }
 
-        public void ScheduleTask(int hour, int min, Action task)
+        public void ScheduleTask(int hour, int min, Func<Task> task)
         {
             DateTime now = DateTime.Now;
             DateTime firstRun = new DateTime(now.Year, now.Month, now.Day, hour, min, 0, 0);
@@ -37,9 +38,9 @@ namespace PrayerTimes.BackgroundWorker
             logger.LogInformation("Scheduling a task with key {key} that will run at: {time}", key, firstRun);
             logger.LogInformation("Scheduling a task that will run after: {time}", waitTime);
 
-            var timer = new Timer(x =>
+            var timer = new Timer(async (x) =>
             {
-                task.Invoke();
+                await task.Invoke();
                 //FinalizeTimer(key);
 
             }, null, waitTime, TimeSpan.FromMilliseconds(-1));

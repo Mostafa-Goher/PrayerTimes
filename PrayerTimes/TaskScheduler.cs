@@ -42,7 +42,7 @@ namespace PrayerTimes.BackgroundWorker
             var timer = new Timer(async (x) =>
             {
                 await task.Invoke();
-                //FinalizeTimer(key);
+                FinalizeTimer(key);
 
             }, null, waitTime, TimeSpan.FromMilliseconds(-1));
 

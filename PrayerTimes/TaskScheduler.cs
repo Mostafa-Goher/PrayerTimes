@@ -17,7 +17,7 @@ namespace PrayerTimes.BackgroundWorker
             this.logger = logger;
         }
 
-        public void ScheduleTask(int hour, int min, Func<Task> task)
+        public void ScheduleTask(int hour, int min, Func<Task> task, string name = "worker")
         {
             DateTime now = DateTime.Now;
             DateTime firstRun = new DateTime(now.Year, now.Month, now.Day, hour, min, 0, 0);
@@ -35,8 +35,9 @@ namespace PrayerTimes.BackgroundWorker
             }
 
             var key = Guid.NewGuid();
-            logger.LogInformation("Scheduling a task with key {key} that will run at: {time}", key, firstRun);
-            logger.LogInformation("Scheduling a task that will run after: {time}", waitTime);
+            logger.LogDebug("Scheduling a task with key {key} that will run at: {time}", key, firstRun);
+
+            logger.LogInformation("Scheduling a task with name {name} that will run at: {time}, will run after: {waitTime}", name, firstRun, waitTime);
 
             var timer = new Timer(async (x) =>
             {
@@ -45,7 +46,7 @@ namespace PrayerTimes.BackgroundWorker
 
             }, null, waitTime, TimeSpan.FromMilliseconds(-1));
 
-            timers.Add(key,timer);
+            timers.Add(key, timer);
         }
 
         private void FinalizeTimer(Guid key)

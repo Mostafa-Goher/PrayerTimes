@@ -45,7 +45,7 @@ namespace PrayerTimes.BackgroundWorker
                 async () =>
                 {
                     await InitForToday();
-                });
+                },"Daily worker");
 
             //for test
             //var testRun = DateTime.Now.AddMinutes(1);
@@ -70,7 +70,7 @@ namespace PrayerTimes.BackgroundWorker
                {
                    _logger.LogInformation("Worker for {prayer} running at: {time}", prayerName, DateTimeOffset.Now);
                    await player.Play(@"http://praytimes.org/audio/adhan/Sunni/Abdul-Basit.mp3");
-               });
+               }, prayerName);
         }
     }
 }
